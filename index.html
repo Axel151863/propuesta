@@ -9,7 +9,7 @@
         body { margin: 0; padding: 0; overflow: hidden; background: black; font-family: 'Arial', sans-serif; }
         canvas { display: block; width: 100vw; height: 100vh; }
         #final-message {
-            position: absolute; top: 30%; left: 50%; transform: translate(-50%, -50%);
+            position: absolute; top: 45%; left: 50%; transform: translate(-50%, -50%);
             color: white; text-align: center; width: 90%; opacity: 0;
             transition: opacity 2s; font-family: 'Great Vibes', cursive;
             font-size: 1.8rem; text-shadow: 0 0 20px #ff0000; z-index: 20;
@@ -49,7 +49,7 @@
         function drawButtons() {
             const isMobile = canvas.width < 600;
             const gap = isMobile ? canvas.width * 0.32 : 220;
-            const yBtn = canvas.height * 0.90;
+            const yBtn = canvas.height * 0.70;
             const r = isMobile ? 22 : 40;
             bSi = { x: (canvas.width / 2) - gap, y: yBtn, r: r };
             bNo = { x: (canvas.width / 2) + gap, y: yBtn, r: r };
@@ -126,9 +126,9 @@
             const clientY = e.clientY || (e.touches && e.touches[0].clientY);
             const mx = clientX - rect.left;
             const my = clientY - rect.top;
-            if (Math.sqrt((mx - bSi.x)**2 + (my - bSi.y)**2) < 60) {
+            if (Math.sqrt((mx - bSi.x)**2 + (my - bSi.y)**2) < 100) {
                 fase = 'final';
-                finalMsg.innerHTML = "¡ME HACES EL HOMBRE MÁS FELIZ DEL MUNDO! ❤️";
+                finalMsg.innerHTML = "¡TE AMO, GRACIAS POR DECIR QUE SI! ❤️";
                 finalMsg.style.opacity = 1;
             }
         }
