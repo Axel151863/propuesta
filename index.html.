@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para mi futura novia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: black; font-family: 'Arial', sans-serif; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        #final-message {
+            position: absolute; top: 70%; left: 50%; transform: translate(-50%, -50%);
+            color: white; text-align: center; width: 90%; opacity: 0;
+            transition: opacity 2s; font-family: 'Great Vibes', cursive;
+            font-size: 1.8rem; text-shadow: 0 0 20px #ff0000; z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="stage"></canvas>
+    <div id="final-message"></div>
+
+    <script>
+        const canvas = document.getElementById('stage');
+        const ctx = canvas.getContext('2d');
+        const finalMsg = document.getElementById('final-message');
+        let fase = 'texto';
+        let stars = [];
+        const frases = ["Hola mi amor,", "solo quería preguntarte", "si...", "¿Quieres ser mi novia?"];
+        const startTime = Date.now();
+        const FUENTE_FAMILIA = "'Great Vibes', cursive";
+        let opacityText = 0;
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initStars();
+        }
+        window.addEventListener('resize', resize);
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 150; i++) {
+                stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, size: Math.random() * 1.5, speed: Math.random() * 0.05 + 0.02 });
+            }
+        }
+
+        let bSi, bNo;
+        function drawButtons() {
+            const isMobile = canvas.width < 600;
+            const gap = isMobile ? canvas.width * 0.32 : 220;
+            const yBtn = canvas.height * 0.90;
+            const r = isMobile ? 22 : 40;
+            bSi = { x: (canvas.width / 2) - gap, y: yBtn, r: r };
+            bNo = { x: (canvas.width / 2) + gap, y: yBtn, r: r };
+            drawHeartShape(bSi.x, bSi.y, isMobile ? 20 : 35, '#ff0000', 'SÍ');
+            drawHeartShape(bNo.x, bNo.y, isMobile ? 20 : 35, '#333', 'NO');
+        }
+
+        function drawHeartShape(x, y, size, color, label) {
+            ctx.save();
+            ctx.fillStyle = color;
+            ctx.shadowBlur = 10; ctx.shadowColor = color;
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.bezierCurveTo(x + size, y - size, x + size*2, y + size, x, y + size*2);
+            ctx.bezierCurveTo(x - size*2, y + size, x - size, y - size, x, y);
+            ctx.fill();
+            if(label){
+                ctx.fillStyle = "white";
+                ctx.font = `bold ${size * 0.7}px Arial`; ctx.textAlign = "center";
+                ctx.fillText(label, x, y + size);
+            }
+            ctx.restore();
+        }
+
+        function animate() {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const now = Date.now() - startTime;
+            stars.forEach(s => {
+                ctx.fillStyle = "white";
+                ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill();
+                s.y += s.speed; if (s.y > canvas.height) s.y = 0;
+            });
+
+            const isMobile = canvas.width < 600;
+            const fontSize = isMobile ? Math.min(22, canvas.height * 0.045) : 52;
+            const lineSpacing = isMobile ? canvas.height * 0.09 : 80;
+            const startY = 0.12;
+
+            if(fase === 'texto' || fase === 'botones') {
+                if(opacityText < 1) opacityText += 0.01;
+                frases.forEach((frase, i) => {
+                    const yPos = (canvas.height * startY) + (i * lineSpacing);
+                    if(now > i * 1800) {
+                        ctx.save();
+                        ctx.globalAlpha = opacityText;
+                        ctx.font = `${fontSize + (i===3?4:0)}px ${FUENTE_FAMILIA}`;
+                        ctx.textAlign = 'center';
+                        if (i === 3) {
+                            ctx.fillStyle = '#ff4d6d';
+                            ctx.fillText(frase, canvas.width / 2, yPos);
+                        } else {
+                            ctx.shadowColor = '#003366'; ctx.shadowBlur = 10;
+                            ctx.fillStyle = '#00d2ff';
+                            ctx.fillText(frase, canvas.width / 2, yPos);
+                        }
+                        ctx.restore();
+                    }
+                });
+                if (now > 9000) { fase = 'botones'; drawButtons(); }
+            }
+
+            if (fase === 'final') {
+                let lat = 1 + Math.sin(Date.now()/200)*0.15;
+                drawHeartShape(canvas.width/2, canvas.height/2.2, isMobile ? 40 : 75, '#ff0000', '');
+            }
+            requestAnimationFrame(animate);
+        }
+
+        function handleAction(e) {
+            if (fase !== 'botones') return;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            const mx = clientX - rect.left;
+            const my = clientY - rect.top;
+            if (Math.sqrt((mx - bSi.x)**2 + (my - bSi.y)**2) < 60) {
+                fase = 'final';
+                finalMsg.innerHTML = "¡ME HACES EL HOMBRE MÁS FELIZ DEL MUNDO! ❤️";
+                finalMsg.style.opacity = 1;
+            }
+        }
+
+        canvas.addEventListener('mousedown', handleAction);
+        canvas.addEventListener('touchstart', handleAction);
+        resize();
+        animate();
+    </script>
+</body>
+</html>
